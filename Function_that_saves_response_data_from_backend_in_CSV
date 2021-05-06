@@ -1,0 +1,27 @@
+const getFilenameFromContentDispositionHeader = (headerInfo: string) => {
+  const filename: RegExpMatchArray | null = headerInfo.match(
+    /filename[^;=\n]=((['"]).?\2|[^;\n]*)/gm
+  )
+
+  if (filename) {
+    return filename[0].replace("filename=", "")
+  }
+  return "file"
+}
+
+export const downloadCSV = (csv: string, contentDisposition: string) => {
+
+  const csvFile = new Blob([csv], { type: "text/csv" })
+  const downloadLink = document.createElement("a")
+
+  downloadLink.download = getFilenameFromContentDispositionHeader(contentDisposition)
+  downloadLink.href = window.URL.createObjectURL(csvFile)
+  downloadLink.style.display = "none"
+
+  document.body.appendChild(downloadLink)
+  downloadLink.click()
+  setTimeout(() => {
+    document.body.removeChild(downloadLink)
+    window.URL.revokeObjectURL(downloadLink.href)
+  }, 100)
+}
